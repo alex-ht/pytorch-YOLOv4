@@ -13,6 +13,25 @@ class Mish(torch.nn.Module):
         x = x * (torch.tanh(torch.nn.functional.softplus(x)))
         return x
 
+class MemoryEfficientMish(nn.Module):
+    def __init__(self):
+        super(MemoryEfficientMish, self).__init__()
+
+    class F(torch.autograd.Function):
+        @staticmethod
+        def forward(ctx, x):
+            ctx.save_for_backward(x)
+            return x.mul(torch.tanh(F.softplus(x)))  # x * tanh(ln(1 + exp(x)))
+
+        @staticmethod
+        def backward(ctx, grad_output):
+            x = ctx.saved_tensors[0]
+            sx = torch.sigmoid(x)
+            fx = F.softplus(x).tanh()
+            return grad_output * (fx + x * sx * (1 - fx * fx))
+
+    def forward(self, x):
+        return self.F.apply(x)
 
 class Upsample(nn.Module):
     def __init__(self):
@@ -49,9 +68,11 @@ class Conv_Bn_Activation(nn.Module):
         if bn:
             self.conv.append(nn.BatchNorm2d(out_channels))
         if activation == "mish":
-            self.conv.append(Mish())
+            self.conv.append(MemoryEfficientMish())
         elif activation == "relu":
             self.conv.append(nn.ReLU(inplace=True))
+        elif activation == "relu6":
+            self.conv.append(nn.ReLU6(inplace=True))
         elif activation == "leaky":
             self.conv.append(nn.LeakyReLU(0.1, inplace=True))
         elif activation == "linear":
