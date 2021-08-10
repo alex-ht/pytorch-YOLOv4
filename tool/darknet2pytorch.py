@@ -264,6 +264,8 @@ class Darknet(nn.Module):
                     model.add_module('relu{0}'.format(conv_id), nn.ReLU(inplace=True))
                 elif activation == 'relu6':
                     model.add_module('relu6{0}'.format(conv_id), nn.ReLU6(inplace=True))
+                elif activation == 'logistic':
+                    model.add_module('sigmoid{0}'.format(conv_id), nn.Sigmoid())
                 elif activation == 'mish':
                     model.add_module('mish{0}'.format(conv_id), Mish())
                 else:
