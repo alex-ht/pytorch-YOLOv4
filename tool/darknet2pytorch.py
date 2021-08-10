@@ -275,7 +275,9 @@ class Darknet(nn.Module):
                 out_filters.append(prev_filters)
                 prev_stride = stride * prev_stride
                 out_strides.append(prev_stride)
-                models.append(model)
+                model.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm')
+                model_fp32_prepared = torch.quantization.prepare_qat(model)
+                models.append(model_fp32_prepared)
             elif block['type'] == 'maxpool':
                 pool_size = int(block['size'])
                 stride = int(block['stride'])
