@@ -62,9 +62,9 @@ class Conv_Bn_Activation(nn.Module):
 
         self.conv = nn.ModuleList()
         if bias:
-            self.conv.append(nn.Conv2d(in_channels, out_channels, kernel_size, stride, pad))
+            self.conv.append(nn.qat.Conv2d(in_channels, out_channels, kernel_size, stride, pad))
         else:
-            self.conv.append(nn.Conv2d(in_channels, out_channels, kernel_size, stride, pad, bias=False))
+            self.conv.append(nn.qat.Conv2d(in_channels, out_channels, kernel_size, stride, pad, bias=False))
         if bn:
             self.conv.append(nn.BatchNorm2d(out_channels))
         if activation == "mish":
